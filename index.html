@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KleopatraKindom</title>
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f0f11;
+            --card-bg: rgba(26, 26, 30, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-color: #a855f7;
+            --header-bg: rgba(15, 15, 17, 0.8);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 40%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            position: sticky;
+            top: 0;
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff;
+            transition: transform 0.3s ease;
+        }
+
+        .brand:hover { transform: scale(1.03); }
+
+        .brand img {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .brand:hover img { transform: rotate(10deg) scale(1.1); }
+
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-select-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-select-btn:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+        }
+
+        .custom-select-btn .arrow {
+            font-size: 0.7rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-select-wrapper.open .custom-select-btn .arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-select-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #1a1a1e;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(168, 85, 247, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-12px) scale(0.95);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            min-width: 90px;
+            z-index: 200;
+        }
+
+        .custom-select-wrapper.open .custom-select-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .option-item {
+            padding: 8px 16px;
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .option-item:hover {
+            background: rgba(168, 85, 247, 0.2);
+            color: #fff;
+        }
+
+        .option-item.selected {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        main {
+            width: 100%;
+            max-width: 900px;
+            padding: 2.5rem 1.5rem;
+            flex: 1;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .content-card:hover {
+            border-color: rgba(168, 85, 247, 0.25);
+            box-shadow: 0 25px 50px rgba(168, 85, 247, 0.1);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .markdown-body { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .markdown-body.fade-out { opacity: 0; transform: translateY(-10px); }
+        .markdown-body.fade-in { animation: fadeInContent 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-body h1 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            animation: gradientShift 6s ease infinite alternate;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .markdown-body h2 { font-size: 1.5rem; margin-top: 1.8rem; margin-bottom: 0.8rem; color: #f1f5f9; }
+        .markdown-body h3 { font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.6rem; color: #e2e8f0; }
+        .markdown-body p { margin-bottom: 1rem; color: #cbd5e1; }
+        .markdown-body hr { border: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border-color), transparent); margin: 2rem 0; }
+
+        .markdown-body a { 
+            color: var(--accent-color); 
+            text-decoration: none; 
+            font-weight: 600; 
+            position: relative;
+            display: inline-block;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+
+        .markdown-body a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            transform: scaleX(0);
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #c084fc;
+            transform-origin: bottom right;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .markdown-body a:hover { color: #c084fc; transform: translateY(-1px); }
+        .markdown-body a:hover::after { transform: scaleX(1); transform-origin: bottom left; }
+
+        .markdown-body img { 
+            max-width: 100%; 
+            height: auto; 
+            margin: 0.5rem 0.4rem 0.5rem 0; 
+            vertical-align: middle; 
+            border-radius: 6px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+
+        .markdown-body img:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 16px rgba(168, 85, 247, 0.25);
+        }
+
+        .markdown-body strong { color: #fff; }
+
+        footer {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            animation: fadeIn 1.2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 640px) {
+            header, main, footer { padding-left: 1rem; padding-right: 1rem; }
+            .content-card { padding: 1.5rem; }
+            .markdown-body h1 { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <img src="./favicon.png" alt="KleopatraKindom Icon" onerror="this.style.display='none'">
+            <span>KleopatraKindom</span>
+        </div>
+        
+        <div class="custom-select-wrapper" id="langDropdown">
+            <div class="custom-select-btn" id="langBtn">
+                <span id="currentLang">RU</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="custom-select-dropdown">
+                <div class="option-item" data-value="RU">RU</div>
+                <div class="option-item" data-value="EN">EN</div>
+                <div class="option-item" data-value="UK">UK</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-card">
+            <article class="markdown-body" id="content"></article>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 KleopatraKindom</p>
+    </footer>
+
+    <script>
+        const siteData = {
+            RU: `# Привет, это KleopatraKindom!
+
+Занимаюсь разработкой софта для Windows и своей системы.
+
+---
+
+### Мой основной стек на данный момент
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
+![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![WPF](https://img.shields.io/badge/WPF-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+
+---
+
+### Мой главный проект
+**[KleopatraKindomTweaker](https://github.com/KleopatraKindom-Team/KTweaker)** - На мой взгляд - дружелюбный и полезный твикер для Windows.
+
+Можно гибко настроить систему, удалить мусорные программы и многое другое!
+
+**[Скачать](https://github.com/KleopatraKindom-Team/KTweaker/releases)**
+
+---
+
+## Скачать скачивальщик с ютуба
+**[YTDownloader](https://github.com/KleopatraKindom-Team/YTDownloader/)** - На мой взгляд - дружелюбная программа скачивания видео с ютуба для Windows.
+
+**[Скачать](https://github.com/KleopatraKindom-Team/YTDownloader/releases)**
+
+---
+
+### Моя система
+Пока в активной разработке, нет в обшем доступе. Релиз планируется к 2027.`,
+
+            EN: `# Hi, this is KleopatraKindom!
+
+I develop software for Windows and my custom system.
+
+---
+
+### My main stack at the moment
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
+![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![WPF](https://img.shields.io/badge/WPF-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+
+---
+
+### My main project
+**[KleopatraKindomTweaker](https://github.com/KleopatraKindom-Team/KTweaker)** - In my view, a user-friendly and helpful Windows tweaker.
+
+You can flexibly tune the system, remove bloatware, and much more!
+
+**[Download](https://github.com/KleopatraKindom-Team/KTweaker/releases)**
+
+---
+
+## Download YouTube Downloader
+**[YTDownloader](https://github.com/KleopatraKindom-Team/YTDownloader/)** - In my view, a user-friendly program for downloading videos from YouTube for Windows.
+
+**[Download](https://github.com/KleopatraKindom-Team/YTDownloader/releases)**
+
+---
+
+### My OS / System
+Currently in active development, not available to the public yet. Release is planned for 2027.`,
+
+            UK: `# Привіт, це KleopatraKindom!
+
+Займаюся розробкою софту для Windows та власної системи.
+
+---
+
+### Мій основний стек на даний момент
+![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
+![.NET 8](https://img.shields.io/badge/.NET_8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![WPF](https://img.shields.io/badge/WPF-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+
+---
+
+### Мій головний проєкт
+**[KleopatraKindomTweaker](https://github.com/KleopatraKindom-Team/KTweaker)** - На мій погляд — зручний та корисний твікер для Windows.
+
+Можна гнучко налаштувати систему, видалити сміттєві програми та багато іншого!
+
+**[Завантажити](https://github.com/KleopatraKindom-Team/KTweaker/releases)**
+
+---
+
+## Завантажити завантажувач з YouTube
+**[YTDownloader](https://github.com/KleopatraKindom-Team/YTDownloader/)** - На мій погляд — зручна програма для завантаження відео з YouTube для Windows.
+
+**[Завантажити](https://github.com/KleopatraKindom-Team/YTDownloader/releases)**
+
+---
+
+### Моя система
+Поки в активній розробці, немає у загальному доступі. Реліз планируется до 2027 року.`
+        };
+
+        function renderContent(lang) {
+            const contentEl = document.getElementById('content');
+            
+            contentEl.classList.remove('fade-in');
+            contentEl.classList.add('fade-out');
+
+            setTimeout(() => {
+                const mdText = siteData[lang] || siteData['RU'];
+                contentEl.innerHTML = marked.parse(mdText);
+                contentEl.classList.remove('fade-out');
+                contentEl.classList.add('fade-in');
+            }, 200);
+        }
+
+        function changeLanguage(lang) {
+            localStorage.setItem('selected_lang', lang);
+            document.getElementById('currentLang').textContent = lang;
+            
+            document.querySelectorAll('.option-item').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.value === lang);
+            });
+
+            renderContent(lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdown = document.getElementById('langDropdown');
+            const btn = document.getElementById('langBtn');
+            const savedLang = localStorage.getItem('selected_lang') || 'RU';
+
+            changeLanguage(savedLang);
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const selectedLang = item.dataset.value;
+                    changeLanguage(selectedLang);
+                    dropdown.classList.remove('open');
+                });
+            });
+
+            document.addEventListener('click', () => {
+                dropdown.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>
